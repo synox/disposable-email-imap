@@ -55,18 +55,3 @@ body {
 
 .nobr { white-space: nowrap }
 
-.followMeBar {
-	background: white;
-	position: relative;
-	z-index: 1;
-}
-.followMeBar.fixed {
-	background: #fff;
-	width: 100%;
-	position: fixed;
-	top: 0;
-	z-index: 2000;
-}
-.followMeBar.fixed.absolute {
-	position: absolute;
-}

@@ -1,6 +1,20 @@
 <?php
 require_once 'vendor/autoload.php';
-require 'app/config.php';
+
+// --- CONFIG
+$mailbox = new PhpImap\Mailbox('{mail.server.com:993/imap/ssl}INBOX', 'user123', 'myp4ssw0rd');
+date_default_timezone_set('Europe/Paris');
+
+# enable in development mode:
+#error_reporting(E_ALL);
+
+# get hostname from request if possible - or define your own
+$serverName = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+define('DOMAIN', str_replace('www.', '', $serverName));
+
+// URI-Redirector Prefix (leave empty for direct links)
+define('URI_REDIRECT_PREFIX', "http://www.redirect.am/?"); 
+// --- end of CONFIG
 
 // setup slim & twig
 $app = new \Slim\Slim(array(
@@ -40,59 +54,61 @@ $app->get('/', function () use ($app) {
     $app->redirect($app->urlFor('read', array('name' => $name)));
 })->name('home');
 
-// switch to other accout using form
+// switch to other account using form
 $app->post('/switch', function () use ($app) {
-    $name = preg_replace('/@.*$/', '', $app->request->params('name'));
+    $name = cleanName($app->request->params('name'));
     $app->redirect($app->urlFor('read', array('name' => $name)));
 })->name('switch');
 
 // ajax check to see if there is new mail
-$app->get('/check/:name', function ($name) use ($app) {
-    $emails = R::find( 'mail', 'username = ?', array( $name ) );
-    print sizeOf($emails);
+$app->get('/check/:name', function ($name) use ($app,$mailbox) {
+    $name = cleanName($name);
+    $mailsIds = $mailbox->searchMailBox('TO "'.$name.'@"'); 
+    print sizeOf($mailsIds);
 })->name('mailcount');
 
 // delete an email
-$app->get('/:name/delete/:id', function ($name, $id) use ($app) {
-    
-    $email = R::findOne( 'mail', ' username = ? AND id = ? ', array( $name, $id ) );
-    if(! is_null($email)) {
-        R::trash( $email );
-    }
+$app->get('/:name/delete/:id', function ($name, $id) use ($app, $mailbox) {
+    $mailbox->deleteMail($id);
+    $mailbox->expungeDeletedMails();
     $app->redirect($app->urlFor('read', array('name' => $name)));
 })->name('delete');
 
-// read original source
-$app->get('/:name/source/:id', function ($name, $id) use ($app) {
-    $email = R::findOne( 'mail', ' username = ? AND id = ? ', array( $name, $id ) );
+// read raw source
+$app->get('/:name/source/:id', function ($name, $id) use ($app,$mailbox) {
+    $email = imap_fetchbody($mailbox->getImapStream(), $id, "", FT_UID);
     if(! is_null($email)) {
         $app->contentType("text/plain");
-        echo $email->raw;
+        print $email;
     } else {
       $app->notFound();
     }
 })->name('source');
 
 // show html
-$app->get('/:name/html/:id', function ($name, $id) use ($app) {
-    $email = R::findOne( 'mail', ' username = ? AND id = ? ', array( $name, $id ) );
+$app->get('/:name/html/:id', function ($name, $id) use ($app, $mailbox) {
+    $email = $mailbox->getMail($id);
     if(! is_null($email)) {
-        $html_safe = preg_replace("/https?:\\/\\//i", URI_REDIRECT_PREFIX . '\\0', $email->body_html);
-        
-        
-        echo $html_safe;
+        $html_safe = preg_replace("/https?:\\/\\//i", URI_REDIRECT_PREFIX . '\\0', $email->textHtml);
+        print $html_safe;
     } else {
       $app->notFound();
     }
 })->name('html');
 
 // read emails
-$app->get('/:name/', function ($name) use ($app) {
-    $name = preg_replace('/@.*$/', "", $name);    
+$app->get('/:name/', function ($name) use ($app,$mailbox) {
+    $name = cleanName($name);
     $address = $name . '@' .DOMAIN;
 
     // get messages
-    $emails = R::find( 'mail', ' username = ? ORDER BY received DESC', array( $name ) );
+    $mailsIds = $mailbox->searchMailBox('TO "'.$name.'@"'); 
+    $emails = array();
+    foreach ($mailsIds as $id) {
+      $emails[] = $mailbox->getMail($id);
+    }
+    //print_r($emails);
+    
     if ( $emails === NULL || count($emails) == 0) {
         $app->render('waiting.html',array('name' => $name, 'address' => $address));
     } else {
@@ -102,8 +118,18 @@ $app->get('/:name/', function ($name) use ($app) {
 
 $app->run();
 
-// cleanup
-$deleteBefore = strtotime('30 days ago');
-R::exec( 'delete from mail where received<?', [ $deleteBefore ] );
 
-R::close();
+function cleanName($name) {
+  $name = preg_replace('/@.*$/', "", $name);   
+  $name =  preg_replace('/[^A-Za-z0-9_.+-]/', "", $name);   // makes it safe
+  return $name;
+}
+
+
+// cleanup old messages
+$before = date('d-M-Y', strtotime('30 days ago'));
+$mailsIds = $mailbox->searchMailBox('BEFORE '.$before); 
+foreach ($mailsIds as $id) {
+  $mailbox->deleteMail($id);
+}
+$mailbox->expungeDeletedMails();

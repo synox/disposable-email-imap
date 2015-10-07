@@ -5,15 +5,12 @@
       "twig/twig": "1.*",
       "gnugat/PronounceableWord": "*",
       "html2text/html2text": "*",
-        "exorus/php-mime-mail-parser": "~1.7"
+      "php-imap/php-imap": "~2.0"
     },
     "autoload": {
         "psr-4": {
             "": "app/lib",
             "DisposableEmail\\": "app"
-        },
-        "files": [
-          "vendor/redbeanphp/rb.php"
-        ]
+        }
     }
 }

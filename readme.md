@@ -30,8 +30,7 @@ https://creativecommons.org/licenses/by-nc/4.0/
 - (optionally) configure the link redirection provider (to keep the existence of your installation secret) in `index.php`
  
 ## TODO
- 1. auto-delete old messages
- 2. security audit against xss/sqli
+ 1. security audit against xss/sqli
 
 
 ## development environment

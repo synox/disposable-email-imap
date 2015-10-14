@@ -100,17 +100,15 @@ $app->get('/:name/html/:id', function ($name, $id) use ($app, $mailbox) {
 
 // read emails
 $app->get('/:name/', function ($name) use ($app,$mailbox) {
-    $name = cleanName($name);
-    $address = $name . '@' .DOMAIN;
-
-    // get messages
-    $mailsIds = $mailbox->searchMailBox('TO "'.$name.'@"'); 
+    $name = cleanName($name);    
+    $mailsIds = imap_sort($mailbox->getImapStream(), SORTARRIVAL, true, SE_UID, 'TO "'.$name.'@"');
+    
     $emails = array();
     foreach ($mailsIds as $id) {
       $emails[] = $mailbox->getMail($id);
     }
-    //print_r($emails);
-    
+      
+    $address = $name . '@' .DOMAIN;
     if ( $emails === NULL || count($emails) == 0) {
         $app->render('waiting.html',array('name' => $name, 'address' => $address));
     } else {

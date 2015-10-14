@@ -2,7 +2,9 @@
 require_once 'vendor/autoload.php';
 
 // --- CONFIG
-$mailbox = new PhpImap\Mailbox('{mail.server.com:993/imap/ssl}INBOX', 'user123', 'myp4ssw0rd');
+$mailbox = new PhpImap\Mailbox('{10.0.5.3/imap/ssl/novalidate-cert}INBOX', 'test', 'test');
+// change this, example: $mailbox = new PhpImap\Mailbox('{mail.server.com:993/imap/ssl}INBOX', 'user123', 'myp4ssw0rd');
+
 date_default_timezone_set('Europe/Paris');
 
 # enable in development mode:

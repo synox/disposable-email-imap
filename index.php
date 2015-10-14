@@ -59,13 +59,16 @@ $app->get('/', function () use ($app) {
 // switch to other account using form
 $app->post('/switch', function () use ($app) {
     $name = cleanName($app->request->params('name'));
+    if(strlen($name)== 0) {
+      $app->redirect($app->urlFor('home'));
+    }
     $app->redirect($app->urlFor('read', array('name' => $name)));
 })->name('switch');
 
 // ajax check to see if there is new mail
 $app->get('/check/:name', function ($name) use ($app,$mailbox) {
     $name = cleanName($name);
-    $mailsIds = $mailbox->searchMailBox('TO "'.$name.'@"'); 
+    $mailsIds = findMails($name, $mailbox);
     print sizeOf($mailsIds);
 })->name('mailcount');
 
@@ -101,13 +104,13 @@ $app->get('/:name/html/:id', function ($name, $id) use ($app, $mailbox) {
 // read emails
 $app->get('/:name/', function ($name) use ($app,$mailbox) {
     $name = cleanName($name);    
-    $mailsIds = imap_sort($mailbox->getImapStream(), SORTARRIVAL, true, SE_UID, 'TO "'.$name.'@"');
+    $mailsIds = findMails($name, $mailbox);
     
     $emails = array();
     foreach ($mailsIds as $id) {
       $emails[] = $mailbox->getMail($id);
     }
-      
+    
     $address = $name . '@' .DOMAIN;
     if ( $emails === NULL || count($emails) == 0) {
         $app->render('waiting.html',array('name' => $name, 'address' => $address));
@@ -122,7 +125,18 @@ $app->run();
 function cleanName($name) {
   $name = preg_replace('/@.*$/', "", $name);   
   $name =  preg_replace('/[^A-Za-z0-9_.+-]/', "", $name);   // makes it safe
+  if(strlen($name) === 0) {
+    return "_";
+  }
   return $name;
+}
+
+function findMails($name, $mailbox) {
+  if(strlen($name) === 0 || $name == "_") {
+    return array();
+  }
+  $mailsIds = imap_sort($mailbox->getImapStream(), SORTARRIVAL, true, SE_UID, 'TO "'.$name.'@"');
+  return $mailsIds;
 }
 
 

@@ -19,10 +19,14 @@ https://creativecommons.org/licenses/by-nc/4.0/
 
 * PHP, Version 5.3.0
 * Apache 2
-* [imap extension](php.net/manual/book.imap.php)
+* [imap extension](http://php.net/manual/book.imap.php)
 * [Composer](https://getcomposer.org/doc/00-intro.md#globally) (PHP Package Manager)
 
 ## Installation
+- assure the [imap extension](http://php.net/manual/book.imap.php) is installed. The following command should not print any errors:
+
+        <?php print imap_base64("SU1BUCBleHRlbnNpb24gc2VlbXMgdG8gYmUgaW5zdGFsbGVkLiA="); ?>
+
 - Clone/download this repository 
 
 ## Configuration

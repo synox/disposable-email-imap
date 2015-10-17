@@ -28,12 +28,14 @@ https://creativecommons.org/licenses/by-nc/4.0/
         <?php print imap_base64("SU1BUCBleHRlbnNpb24gc2VlbXMgdG8gYmUgaW5zdGFsbGVkLiA="); ?>
 
 - Clone/download this repository 
+- run `composer install`
 
 ## Configuration
 - configure the imap account in `index.php`
 - (optionally) configure the link redirection provider (to keep the existence of your installation secret) in `index.php`
  
 ## TODO
+ 1. the full body view is unsafe and should not yet be enabled in a productive system. 
  1. security audit against xss/sqli
 
 

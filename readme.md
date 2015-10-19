@@ -37,7 +37,7 @@ https://creativecommons.org/licenses/by-nc/4.0/
 ## TODO
  1. the full body view is unsafe and should not yet be enabled in a productive system. 
  1. security audit against xss/sqli
-
+ 1. protected mode should not allow loading full HTML
 
 ## development environment
 There is a Vagrantfile to be used with [vagrant](https://www.vagrantup.com/). 

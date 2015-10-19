@@ -2,7 +2,7 @@
 require_once 'vendor/autoload.php';
 
 // --- CONFIG
-$mailbox = new PhpImap\Mailbox('{10.0.5.3/imap/ssl/novalidate-cert}INBOX', 'test', 'test');
+$mailbox = new PhpImap\Mailbox('{10.1.1.60/imap/ssl/novalidate-cert}INBOX', 'test', 'test');
 // change this, example: $mailbox = new PhpImap\Mailbox('{mail.server.com:993/imap/ssl}INBOX', 'user123', 'myp4ssw0rd');
 
 date_default_timezone_set('Europe/Paris');
@@ -13,6 +13,7 @@ date_default_timezone_set('Europe/Paris');
 # get hostname from request if possible - or define your own
 $serverName = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
 define('DOMAIN', str_replace('www.', '', $serverName));
+define('PROTECTED_SUFFIX', ".secret");
 
 // URI-Redirector Prefix (leave empty for direct links)
 define('URI_REDIRECT_PREFIX', "http://www.redirect.am/?"); 
@@ -65,6 +66,21 @@ $app->post('/switch', function () use ($app) {
     $app->redirect($app->urlFor('read', array('name' => $name)));
 })->name('switch');
 
+
+
+
+// switch to other account using form
+$app->get('/create-protected', function () use ($app) {  
+  $token = getRandomString(30);
+  $app->redirect($app->urlFor('read-protected', array('token' => $token)));
+  
+    $name = cleanName($app->request->params('name'));
+    if(strlen($name)== 0) {
+      $app->redirect($app->urlFor('home'));
+    }
+    $app->redirect($app->urlFor('read-protected', array('name' => $name)));
+})->name('create-protected');
+
 // ajax check to see if there is new mail
 $app->get('/check/:name', function ($name) use ($app,$mailbox) {
     $name = cleanName($name);
@@ -101,6 +117,28 @@ $app->get('/:name/html/:id', function ($name, $id) use ($app, $mailbox) {
     }
 })->name('html');
 
+
+
+// read protected emails
+$app->get('/protected/:token/', function ($token) use ($app,$mailbox) {
+    $token = preg_replace('/[^A-Za-z0-9]/', "", $token);
+    
+    $name = createProtectedName($token);
+    $mailsIds = findMails($name, $mailbox);
+    
+    $emails = array();
+    foreach ($mailsIds as $id) {
+      $emails[] = $mailbox->getMail($id);
+    }
+    
+    $address = $name . '@' .DOMAIN;
+    if ( $emails === NULL || count($emails) == 0) {
+        $app->render('waiting_protected.html',array('name' => $name, 'address' => $address));
+    } else {
+        $app->render('list_protected.html',array('name' => $name, 'address' => $address, 'emails'=>$emails));
+    }
+})->name('read-protected');
+
 // read emails
 $app->get('/:name/', function ($name) use ($app,$mailbox) {
     $name = cleanName($name);    
@@ -119,12 +157,14 @@ $app->get('/:name/', function ($name) use ($app,$mailbox) {
     }
 })->name('read');
 
+
 $app->run();
 
 
 function cleanName($name) {
   $name = preg_replace('/@.*$/', "", $name);   
-  $name =  preg_replace('/[^A-Za-z0-9_.+-]/', "", $name);   // makes it safe
+  $name = preg_replace('/[^A-Za-z0-9_.+-]/', "", $name);   // makes it safe
+  $name = preg_replace('/'.PROTECTED_SUFFIX.'/', "", $name);   // don't allow protected addresses
   if(strlen($name) === 0) {
     return "_";
   }
@@ -139,6 +179,19 @@ function findMails($name, $mailbox) {
   return $mailsIds;
 }
 
+function getRandomString($length) {
+    // @see http://stackoverflow.com/q/4757392/11301
+    $result = null;
+    $replace = array('/', '+', '=');
+    while(!isset($result[$length-1])) {
+        $result.= str_replace($replace, NULL, base64_encode(mcrypt_create_iv($length, MCRYPT_RAND)));
+    }
+    return substr($result, 0, $length);
+}
+function createProtectedName($token) {
+  $salt = $token . DOMAIN;
+  return hash("sha1", $salt . $token, false) . PROTECTED_SUFFIX;
+}
 
 // cleanup old messages
 $before = date('d-M-Y', strtotime('30 days ago'));

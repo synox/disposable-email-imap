@@ -5,7 +5,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.box = "avenuefactory/lamp"
-  config.vm.network "private_network", ip: "10.0.5.3"
+  config.vm.network "private_network", ip: "10.1.1.60"
 
   config.vm.synced_folder "./", "/var/www/html", id: "vagrant-root",
     owner: "vagrant",
@@ -44,7 +44,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        # TODO: backup and restore (probleme mit komischen filenames)
       sudo stop dovecot
       [ -d "/home/vagrant/Maildir" ] && sudo rm -R /home/vagrant/Maildir
-      sudo cp -Rp /vagrant/testmails/Maildir /home/vagrant/
+      # sudo cp -Rp /vagrant/testmails/Maildir /home/vagrant/
       sudo chown -R vagrant:vagrant /home/vagrant/Maildir
       sudo chmod a+rw /home/vagrant/Maildir
       sudo start dovecot

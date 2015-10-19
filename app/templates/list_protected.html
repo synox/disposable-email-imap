@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container email-table">
+
+	<div class="row title-header">
+		  <div class="col-sm-4">From</div>
+		  <div class="col-sm-6">Subject</div>
+		  <div class="col-sm-2"></div>
+	</div>
+
+
+{% for email in emails %}
+
+	<div class="row email-header">
+	  <div class="col-sm-4">{{email.fromAddress}}</div>
+	  <div class="col-sm-6">{{email.subject}}</div>
+	  <div class="col-sm-2">
+<!--	  	<a href="{{urlFor('delete', {name: name, id: email.id}) }}" class="nobr"><span class="octicon octicon-trashcan"></span> Delete</a> &nbsp;
+			<a href="{{urlFor('source', {name: name, id: email.id}) }}" class="nobr"><span class="octicon octicon-code"></span>&nbsp;Source</a> &nbsp;
+			<a href="{{urlFor('html', {name: name, id: email.id}) }}" class="nobr"><span class="octicon octicon-browser"></span>&nbsp;Html</a> -->
+	  	</div>
+	</div>
+
+	<div class="row email-info">
+		<div class="col-sm-10">
+		<dl class="info-list">
+			<dt>To:</dt>
+				<dd>{{email.toString}}</dd>
+			<dt>From:</dt>
+				<dd>{{email.fromName}} &lt;{{email.fromAddress}}&gt;</dd>
+			<dt>Subject:</dt>
+				<dd>{{email.subject}}</dd>
+			<dt>Date:</dt>
+				<dd>{{email.date}}</dd>
+			</dl>
+
+		</div>
+	</div>
+
+	<div class="row email-text">
+	  {% autoescape false %}
+		  {% if email.textPlain|length > 0 and email.textPlain != "0" %}
+	  		<div class="col-sm-10">{{email.textPlain|nl2br|auto_link_text}}</div>
+	  	  {% else %}
+	  	  	<div class="col-sm-10">{{email.textHtml|html2Text|nl2br|auto_link_text}}</div>
+	  	  {% endif %}
+  	  {% endautoescape %}
+	</div>
+{% endfor %}
+</div>
+
+
+{%endblock%}

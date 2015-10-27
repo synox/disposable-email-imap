@@ -2,7 +2,7 @@
 
 This disposable email solution can be hosted on your own standard PHP-webhoster. All you need is PHP with imap extension and an imap account with catch-all. The system is as simple as possible, with minimal codebase and complexity. 
 
-*Note: This is alphatested software, do not use it in production, it may lose your mails and people may gain access to your mails. There are still unsolved problems. *
+*Note: This is alphatested software, do not use it in production, it may lose your mails and people may gain access to your mails. There are still unsolved problems.*
 
 Note: This is the IMAP version without database and that does not need "pipe to command". See also alternative script at https://github.com/synox/disposable-email
 

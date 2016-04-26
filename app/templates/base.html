@@ -22,7 +22,7 @@
   <body>
 
 
- {% block navigation%}  
+ {% block navigation%}
   <div class="navbar" role="navigation">
       <div class="container">
         <div class="navbar-header">
@@ -34,25 +34,26 @@
               <input name="name" onclick="this.select();" type='text' class="form-control" value='{{address}}' />
             </div>
             <button type="submit" class="btn btn-default">Show</button>
-          </form>  
-        
+          </form>
+
       </div>
     </div>
  {%endblock%}
 
     <script src="{{ baseUrl() }}/assets/jquery-2.1.1.min.js"></script>
-    
-      {% block content%}  
+
+      {% block content%}
       {%endblock%}
 
-      
-      
+
+
       <div class="container">
       <footer>
+        <p>Powered by <a href="https://github.com/synox/disposable-email-imap"><strong>synox/disposable-email-imap</strong></a> 
         <p><a href="https://github.com/synox/disposable-email-imap"><span class="octicon octicon-mark-github"></span> Fork me on github</a></p>
       </footer>
-      
+
       </div>
-   
+
   </body>
 </html>

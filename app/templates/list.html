@@ -40,7 +40,7 @@
 
 	<div class="row email-text">
 	  {% autoescape false %}
-		  {% if email.textPlain|length > 0 and email.textPlain != "0" %}
+		  {% if email.textPlain| trim | length > 0 and email.textPlain != "0" %}
 	  		<div class="col-sm-10">{{email.textPlain|nl2br|auto_link_text}}</div>
 	  	  {% else %}
 	  	  	<div class="col-sm-10">{{email.textHtml|html2Text|nl2br|auto_link_text}}</div>

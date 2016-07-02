@@ -1,5 +1,10 @@
 # self-hosted disposable email system
 
+# WARNING: Discontinued
+## this repository is not maintained any more! please use https://github.com/synox/disposable-mailbox instead, which is a complete rewrite with angularjs. 
+
+----
+
 This disposable email solution can be hosted on your own standard PHP-webhoster. All you need is PHP with imap extension and an imap account with catch-all. The system is as simple as possible, with minimal codebase and complexity. 
 
 *Note: This is alphatested software, do not use it in production, it may lose your mails and people may gain access to your mails. There are still unsolved problems.*
